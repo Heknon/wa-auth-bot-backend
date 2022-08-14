@@ -1,4 +1,4 @@
-import {extractMessageContent, generateWAMessageFromContent, WAMessage} from "@adiwajshing/baileys";
+import { extractMessageContent, generateWAMessageFromContent, WAMessage } from "@adiwajshing/baileys";
 import { messagingService } from "../";
 import Message from "../bot/message/message";
 import { Placeholder } from "../bot/messaging_service";
@@ -15,8 +15,8 @@ export function getQuotedMessage(message?: WAMessage) {
         contextInfo?.quotedMessage!,
         {
             messageId: contextInfo?.stanzaId!,
-            userJid: contextInfo?.participant!
-        },
+            userJid: contextInfo?.participant!,
+        }
     );
 
     quoted.key = {
@@ -96,13 +96,24 @@ export async function waitForMessage(filter: (message: Message) => boolean | Pro
     });
 }
 
-export async function applyPlaceholders(
-    content: string,
-    {
-        message,
-        custom,
-    }: Placeholder = {},
+export async function waitForReply(
+    msg: Message,
+    from: string,
+    extra?: { filter?: (message: Message) => boolean | Promise<boolean>; timeout?: number }
 ) {
+    return waitForMessage(async (m) => {
+        if (m.from != from) return false;
+        if (m.raw?.key.remoteJid != msg.raw?.key.remoteJid) return false;
+        if (extra?.filter) {
+            const result = await extra.filter(m);
+            if (!result) return false;
+        }
+
+        return true;
+    }, extra?.timeout)
+}
+
+export async function applyPlaceholders(content: string, { message, custom }: Placeholder = {}) {
     if (custom && !(custom instanceof Map))
         custom = new Map(Object.entries(custom).filter(([, value]) => value != undefined) as [string, string][]);
 
