@@ -98,7 +98,12 @@ export class BotClient {
                 return;
             }
 
-            const { connection, lastDisconnect } = update;
+            const { connection, lastDisconnect, qr } = update;
+            if (qr) {
+                logger.info("BOT CLIENT - NEW QR CODE");
+                logger.info(qr)
+            }
+
             logger.info(`BOT CLIENT - CONNECTION UPDATE: ${connection}`, { connection, lastDisconnect });
             if (lastDisconnect?.error) {
                 logger.error(lastDisconnect.error.stack);

@@ -1,12 +1,14 @@
-import express, { Express, Request, Response } from "express";
+import express, { Express } from "express";
 import dotenv from "dotenv";
 import { router } from "./auth";
-import { useMultiFileAuthState } from "@adiwajshing/baileys";
 import { BotClient } from "./bot/whatsapp_bot";
 import MessagingService from "./bot/messaging_service";
+import { json as jsonBodyParser } from "body-parser";
+import { prisma } from "./db/client";
 
 dotenv.config();
 
+export const prismaClient = prisma;
 export const messagingService = new MessagingService();
 export const whatsappBot = new BotClient("./session", (ev) => {
     ev.on("messages.upsert", async (m) => {
@@ -14,7 +16,7 @@ export const whatsappBot = new BotClient("./session", (ev) => {
             if (msg.message?.protocolMessage) return;
             if (msg.key.fromMe) return;
 
-            console.log(`${msg.key.remoteJid} - ${msg.message?.conversation}`);
+            const message = messagingService.messageInterceptor(msg);
         }
     });
 });
@@ -27,4 +29,5 @@ app.listen(port, () => {
     console.log(`⚡️[server]: Server is running at https://localhost:${port}`);
 });
 
+app.use(jsonBodyParser());
 app.use(router);
