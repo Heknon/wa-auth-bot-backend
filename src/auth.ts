@@ -48,7 +48,10 @@ router.post("/auth/phone", async (req: Request, res: Response) => {
         if (!user) {
             user = await prismaClient?.user.create({ data: { name: data.name, phone: number, email: number } });
         } else {
-            user = await prismaClient?.user.update({
+            const update: any = new Map();
+            if (data.name.length > 0 && data.name != user.name) update.set = data.name
+
+            if (Object.keys(update).length > 0) user = await prismaClient?.user.update({
                 data: { name: data.name },
                 where: { id: user.id },
             });
