@@ -56,6 +56,7 @@ router.post("/auth/phone", async (req: Request, res: Response) => {
                 where: { id: user.id },
             });
         }
+
         return res.status(200).json({
             success: true,
             user
